@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <h1>Start your diary</h1>
+  <p class="muted">Create a free account. Only you can see your entries.</p>
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<small class="help">{{ field.help_text|safe }}</small>{% endif %}
+        {% if field.errors %}<div class="errors">{{ field.errors }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-block">Create account</button>
+  </form>
+  <p class="muted center">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+</section>
+{% endblock %}

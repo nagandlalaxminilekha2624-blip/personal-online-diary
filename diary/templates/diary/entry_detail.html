@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.title }}{% endblock %}
+{% block content %}
+<article class="paper">
+  <div class="card-top">
+    <time datetime="{{ entry.entry_date|date:'Y-m-d' }}">{{ entry.entry_date|date:"l, d F Y" }}</time>
+    {% if entry.mood %}
+      <span class="badge mood-{{ entry.mood }}">
+        {{ entry.mood_emoji }} {{ entry.get_mood_display }}{% if entry.mood_is_predicted %} · predicted by Naive Bayes{% endif %}
+      </span>
+    {% else %}
+      <span class="badge">No mood detected</span>
+    {% endif %}
+  </div>
+  <h1>{{ entry.title }}</h1>
+  <div class="entry-body">{{ entry.content|linebreaks }}</div>
+  <p class="muted small">Written {{ entry.created_at|date:"d M Y, H:i" }}{% if entry.updated_at|date:"U" != entry.created_at|date:"U" %} · edited {{ entry.updated_at|date:"d M Y, H:i" }}{% endif %}</p>
+  <div class="actions">
+    <a class="btn" href="{% url 'entry_edit' entry.pk %}">Edit</a>
+    <a class="btn btn-danger" href="{% url 'entry_delete' entry.pk %}">Delete</a>
+    <a class="btn btn-ghost" href="{% url 'entry_list' %}">← Back to entries</a>
+  </div>
+</article>
+{% endblock %}

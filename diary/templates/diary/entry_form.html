@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New entry{% else %}Edit entry{% endif %}{% endblock %}
+{% block content %}
+<section class="paper">
+  <h1>{% if is_new %}Write a new entry{% else %}Edit entry{% endif %}</h1>
+  <form method="post" class="form" id="entry-form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="row">
+      <div class="field grow">
+        <label for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="errors">{{ form.title.errors }}</div>{% endif %}
+      </div>
+      <div class="field">
+        <label for="{{ form.entry_date.id_for_label }}">Date</label>
+        {{ form.entry_date }}
+        {% if form.entry_date.errors %}<div class="errors">{{ form.entry_date.errors }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="{{ form.content.id_for_label }}">Your thoughts</label>
+      {{ form.content }}
+      {% if form.content.errors %}<div class="errors">{{ form.content.errors }}</div>{% endif %}
+    </div>
+
+    <div class="field mood-field">
+      <label for="{{ form.mood.id_for_label }}">Mood</label>
+      <div class="row center-v">
+        {{ form.mood }}
+        <button type="button" class="btn btn-ghost" id="predict-btn">🔮 Predict my mood</button>
+        <span id="predict-result" class="predict-result" aria-live="polite"></span>
+      </div>
+      <small class="help">Leave on “Auto-detect” and the app will predict your mood when you save. Picking a mood yourself also teaches the model.</small>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn">Save entry</button>
+      <a class="btn btn-ghost" href="{% if is_new %}{% url 'entry_list' %}{% else %}{% url 'entry_detail' entry.pk %}{% endif %}">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<script>
+  (function () {
+    var form = document.getElementById("entry-form");
+    var btn = document.getElementById("predict-btn");
+    var out = document.getElementById("predict-result");
+    var moodSelect = document.getElementById("{{ form.mood.id_for_label }}");
+
+    btn.addEventListener("click", function () {
+      var title = form.elements["title"].value;
+      var content = form.elements["content"].value;
+      var text = (title + ". " + content).trim();
+      if (text.length < 3) { out.textContent = "Write something first."; return; }
+
+      var data = new FormData();
+      data.append("csrfmiddlewaretoken", form.elements["csrfmiddlewaretoken"].value);
+      data.append("text", text);
+      out.textContent = "Thinking…";
+
+      fetch("{% url 'predict_mood' %}", { method: "POST", body: data, credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.mood) {
+            out.textContent = "Not enough emotional words to tell yet.";
+            return;
+          }
+          out.textContent = res.emoji + " " + res.label + " (" + res.confidence + "% sure)";
+          if (moodSelect) { moodSelect.value = res.mood; }
+        })
+        .catch(function () { out.textContent = "Prediction failed. Try again."; });
+    });
+  })();
+</script>
+{% endblock %}

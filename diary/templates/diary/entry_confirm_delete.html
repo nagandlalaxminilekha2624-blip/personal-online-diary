@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Delete entry{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <h1>Delete this entry?</h1>
+  <p>“<strong>{{ entry.title }}</strong>” from {{ entry.entry_date|date:"d M Y" }} will be permanently removed. This cannot be undone.</p>
+  <form method="post" class="actions">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+    <a class="btn btn-ghost" href="{% url 'entry_detail' entry.pk %}">Cancel</a>
+  </form>
+</section>
+{% endblock %}

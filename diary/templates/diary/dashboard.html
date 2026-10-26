@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Mood dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Mood dashboard</h1>
+    <p class="muted">How you have been feeling, based on your entries.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="stat-num">{{ total }}</span><span class="stat-label">Total entries</span></div>
+  <div class="stat"><span class="stat-num">{{ this_month }}</span><span class="stat-label">This month</span></div>
+  <div class="stat"><span class="stat-num">{{ trained_on }}</span><span class="stat-label">Moods you taught the model</span></div>
+</div>
+
+<section class="card">
+  <h2>Mood breakdown</h2>
+  {% if total %}
+    <ul class="bars">
+      {% for m in mood_stats %}
+        <li>
+          <span class="bar-label">{{ m.emoji }} {{ m.label }}</span>
+          <span class="bar-track"><span class="bar-fill mood-bg-{{ m.key }}" style="width: {{ m.percent }}%"></span></span>
+          <span class="bar-value">{{ m.count }} · {{ m.percent }}%</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No entries yet. <a href="{% url 'entry_create' %}">Write your first one</a> to see your mood chart.</p>
+  {% endif %}
+</section>
+
+{% if latest %}
+<section class="card">
+  <h2>Latest entry</h2>
+  <p><a href="{% url 'entry_detail' latest.pk %}">{{ latest.title }}</a> · {{ latest.entry_date|date:"d M Y" }}
+    {% if latest.mood %}<span class="badge mood-{{ latest.mood }}">{{ latest.mood_emoji }} {{ latest.get_mood_display }}</span>{% endif %}</p>
+</section>
+{% endif %}
+{% endblock %}

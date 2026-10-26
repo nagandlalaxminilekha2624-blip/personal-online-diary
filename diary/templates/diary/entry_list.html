@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Entries{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>My entries</h1>
+    <p class="muted">{{ page.paginator.count }} entr{{ page.paginator.count|pluralize:"y,ies" }}{% if query or selected_mood %} found{% endif %}</p>
+  </div>
+  <a class="btn" href="{% url 'entry_create' %}">+ Write new entry</a>
+</div>
+
+<form method="get" class="search-bar">
+  <input type="search" name="q" value="{{ query }}" placeholder="Search your thoughts…">
+  <select name="mood" aria-label="Filter by mood">
+    <option value="">All moods</option>
+    {% for m in moods %}
+      <option value="{{ m.key }}" {% if m.key == selected_mood %}selected{% endif %}>{{ m.emoji }} {{ m.label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-ghost">Search</button>
+  {% if query or selected_mood %}<a href="{% url 'entry_list' %}" class="link-btn">Clear</a>{% endif %}
+</form>
+
+{% if page.object_list %}
+  <div class="grid">
+    {% for entry in page %}
+      <article class="card entry-card mood-border-{{ entry.mood }}">
+        <div class="card-top">
+          <time datetime="{{ entry.entry_date|date:'Y-m-d' }}">{{ entry.entry_date|date:"D, d M Y" }}</time>
+          {% if entry.mood %}
+            <span class="badge mood-{{ entry.mood }}" {% if entry.mood_is_predicted %}title="Predicted by Naive Bayes"{% endif %}>
+              {{ entry.mood_emoji }} {{ entry.get_mood_display }}{% if entry.mood_is_predicted %} · auto{% endif %}
+            </span>
+          {% endif %}
+        </div>
+        <h2><a href="{% url 'entry_detail' entry.pk %}">{{ entry.title }}</a></h2>
+        <p class="excerpt">{{ entry.content|truncatewords:28 }}</p>
+        <div class="card-actions">
+          <a href="{% url 'entry_detail' entry.pk %}">Read</a>
+          <a href="{% url 'entry_edit' entry.pk %}">Edit</a>
+          <a href="{% url 'entry_delete' entry.pk %}" class="danger">Delete</a>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  {% if page.has_other_pages %}
+    <nav class="pagination" aria-label="Pages">
+      {% if page.has_previous %}<a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.previous_page_number }}">← Newer</a>{% endif %}
+      <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}<a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.next_page_number }}">Older →</a>{% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="empty">
+    <div class="empty-icon" aria-hidden="true">✍️</div>
+    {% if query or selected_mood %}
+      <h2>No entries match your search</h2>
+      <p class="muted">Try a different word or clear the filters.</p>
+    {% else %}
+      <h2>Your diary is empty</h2>
+      <p class="muted">Write your first entry — how was your day?</p>
+      <a class="btn" href="{% url 'entry_create' %}">Write first entry</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

@@ -4,9 +4,11 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY: change this and set DEBUG = False before deploying anywhere public.
-SECRET_KEY = "django-insecure-change-this-before-deploying"
-DEBUG = True
-ALLOWED_HOSTS = []
+import os
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-local-development-only")
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
